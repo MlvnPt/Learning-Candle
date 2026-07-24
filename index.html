@@ -176,6 +176,14 @@ body{
 .candle.extinguished .flame-glow{ opacity:0; transition:opacity 1.4s ease; }
 .candle.extinguished .wick{ opacity:.6; }
  
+.flow-drip{
+  position:absolute; left:0;
+  transform:translateX(-50%);
+  background:linear-gradient(var(--ivory), var(--ivory-dark));
+  box-shadow:inset -1px 0 2px rgba(0,0,0,.25);
+  opacity:.92; z-index:2; pointer-events:none;
+}
+ 
 @keyframes flicker{
   0%,100%{ transform:translateX(-50%) scale(1) rotate(0deg); }
   22%{ transform:translateX(-50%) scale(1.06,.93) rotate(-3deg); }
@@ -290,25 +298,61 @@ body{
   padding:12px 14px; color:var(--text); font-size:16px; font-family:inherit;
 }
 .field input:focus{ outline:2px solid var(--amber); outline-offset:1px; }
-.presets{ display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
-.chip{
-  border:1px solid var(--panel-line); background:none; color:var(--text-dim);
-  border-radius:999px; padding:6px 13px; font-size:13px; cursor:pointer;
+.wheel-picker{
+  position:relative; display:flex;
+  height:180px; background:#0f0c09;
+  border:1px solid var(--panel-line); border-radius:12px;
+  overflow:hidden;
 }
-.chip.active{ border-color:var(--amber); color:var(--text); }
+.wheel-band{
+  position:absolute; left:0; right:0; top:50%; transform:translateY(-50%);
+  height:36px; background:rgba(255,255,255,.05);
+  border-top:1px solid var(--panel-line); border-bottom:1px solid var(--panel-line);
+  pointer-events:none;
+}
+.wheel-col-wrap{ position:relative; flex:1; height:100%; }
+.wheel-scroll{
+  height:100%; overflow-y:scroll; scroll-snap-type:y mandatory;
+  overscroll-behavior:contain; padding:72px 0;
+  -webkit-overflow-scrolling:touch; scrollbar-width:none;
+}
+.wheel-scroll::-webkit-scrollbar{ display:none; }
+.wheel-item{
+  height:36px; display:flex; align-items:center; justify-content:center;
+  font-size:20px; color:var(--text-dim); scroll-snap-align:center;
+  font-variant-numeric:tabular-nums;
+}
+.wheel-item.active{ color:var(--text); font-weight:600; }
+.wheel-unit{
+  position:absolute; top:50%; right:10px; transform:translateY(-50%);
+  font-size:13px; color:var(--text-dim); pointer-events:none;
+}
 .modal-actions{ display:flex; gap:10px; margin-top:20px; }
+.modal-actions button{
+  font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  transition:transform .12s ease, filter .12s ease, background .12s ease, box-shadow .12s ease;
+}
 .modal-actions .btn-save{
-  flex:1; background:linear-gradient(180deg, var(--green), var(--green-dark)); color:#f4efe3;
-  border:none; border-radius:12px; padding:13px 0; font-size:16px; font-weight:600; cursor:pointer;
+  flex:1; background:var(--green); color:#f5f1e6;
+  border:none; border-radius:14px; padding:14px 0;
+  font-size:15px; font-weight:600; letter-spacing:.01em; cursor:pointer;
+  box-shadow:0 4px 14px rgba(82,121,79,.35);
 }
+.modal-actions .btn-save:active{ transform:scale(.97); filter:brightness(.94); box-shadow:0 2px 8px rgba(82,121,79,.28); }
 .modal-actions .btn-cancel{
-  background:none; border:1px solid var(--panel-line); color:var(--text-dim);
-  border-radius:12px; padding:13px 18px; font-size:15px; cursor:pointer;
+  background:rgba(255,255,255,.03); border:1px solid var(--panel-line); color:var(--text-dim);
+  border-radius:14px; padding:14px 20px; font-size:15px; font-weight:500; cursor:pointer;
 }
+.modal-actions .btn-cancel:active{ background:rgba(255,255,255,.07); color:var(--text); transform:scale(.97); }
 .btn-delete{
-  margin-top:14px; width:100%; background:none; border:none; color:var(--danger);
-  font-size:14px; padding:6px; cursor:pointer;
+  margin-top:14px; width:100%;
+  font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background:rgba(138,59,50,.08); border:1px solid rgba(138,59,50,.4);
+  color:var(--danger); border-radius:12px; padding:11px 0;
+  font-size:14px; font-weight:500; cursor:pointer;
+  transition:background .12s ease, transform .12s ease;
 }
+.btn-delete:active{ background:rgba(138,59,50,.18); transform:scale(.98); }
  
 /* ---------- BURN VIEW ---------- */
 #view-burn{ justify-content:center; }
@@ -411,14 +455,21 @@ body{
       <input type="text" id="profileNameInput" maxlength="24" placeholder="Profilname">
     </div>
     <div class="field">
-      <label for="profileMinutesInput">Lernzeit (Minuten)</label>
-      <input type="number" id="profileMinutesInput" min="1" max="180" inputmode="numeric">
-      <div class="presets" id="presetChips">
-        <button type="button" class="chip" data-min="15">15</button>
-        <button type="button" class="chip" data-min="25">25</button>
-        <button type="button" class="chip" data-min="45">45</button>
-        <button type="button" class="chip" data-min="60">60</button>
-        <button type="button" class="chip" data-min="90">90</button>
+      <label>Lernzeit</label>
+      <div class="wheel-picker" id="wheelPicker">
+        <div class="wheel-band"></div>
+        <div class="wheel-col-wrap">
+          <div class="wheel-scroll" id="wheelHours"></div>
+          <div class="wheel-unit">Std.</div>
+        </div>
+        <div class="wheel-col-wrap">
+          <div class="wheel-scroll" id="wheelMinutes"></div>
+          <div class="wheel-unit">Min.</div>
+        </div>
+        <div class="wheel-col-wrap">
+          <div class="wheel-scroll" id="wheelSeconds"></div>
+          <div class="wheel-unit">Sek.</div>
+        </div>
       </div>
     </div>
     <div class="modal-actions">
@@ -471,6 +522,18 @@ body{
   function nextId(){
     return profiles.reduce((m,p)=>Math.max(m,p.id),0) + 1;
   }
+  function formatDuration(totalMinutes){
+    const totalSeconds = Math.round(totalMinutes*60);
+    const h = Math.floor(totalSeconds/3600);
+    const m = Math.floor((totalSeconds%3600)/60);
+    const s = totalSeconds%60;
+    const parts = [];
+    if(h>0) parts.push(h+' Std');
+    if(m>0) parts.push(m+' Min');
+    if(s>0 && h===0) parts.push(s+' Sek');
+    if(parts.length===0) parts.push('0 Min');
+    return parts.join(' ');
+  }
  
   /* ---------- view switching ---------- */
   const views = {
@@ -485,7 +548,7 @@ body{
  
   function renderMenuSub(){
     const p = getActiveProfile();
-    document.getElementById('menuSub').textContent = p.name + ' · ' + p.minutes + ' Min';
+    document.getElementById('menuSub').textContent = p.name + ' · ' + formatDuration(p.minutes);
   }
  
   /* ---------- profile list rendering ---------- */
@@ -504,11 +567,12 @@ body{
         '</div>' +
         '<div class="profile-info">' +
           '<span class="profile-name"></span>' +
-          '<span class="profile-hint">Antippen zum Auswählen</span>' +
+          '<span class="profile-hint"></span>' +
         '</div>' +
         '<button class="edit-btn" aria-label="Bearbeiten" data-id="'+p.id+'">✎</button>';
-      row.querySelector('.num').textContent = p.minutes;
+      row.querySelector('.num').textContent = Math.round(p.minutes);
       row.querySelector('.profile-name').textContent = p.name;
+      row.querySelector('.profile-hint').textContent = formatDuration(p.minutes);
       row.addEventListener('click', (e)=>{
         if(e.target.closest('.edit-btn')) return;
         activeId = p.id;
@@ -535,9 +599,49 @@ body{
   const modalBackdrop = document.getElementById('modalBackdrop');
   const modalTitle = document.getElementById('modalTitle');
   const nameInput = document.getElementById('profileNameInput');
-  const minutesInput = document.getElementById('profileMinutesInput');
   const deleteBtn = document.getElementById('modalDelete');
   let editingId = null;
+ 
+  /* --- Apple-style hour/minute/second wheel picker --- */
+  const WHEEL_ITEM_H = 36;
+  const wheelHoursEl = document.getElementById('wheelHours');
+  const wheelMinutesEl = document.getElementById('wheelMinutes');
+  const wheelSecondsEl = document.getElementById('wheelSeconds');
+ 
+  function buildWheel(el, max){
+    let html = '';
+    for(let i=0;i<=max;i++){
+      html += '<div class="wheel-item">' + String(i).padStart(2,'0') + '</div>';
+    }
+    el.innerHTML = html;
+  }
+  function setWheelValue(el, value){
+    el.scrollTop = value * WHEEL_ITEM_H;
+  }
+  function getWheelValue(el){
+    return Math.round(el.scrollTop / WHEEL_ITEM_H);
+  }
+  function updateWheelHighlight(el){
+    const idx = getWheelValue(el);
+    const items = el.children;
+    for(let i=0;i<items.length;i++){
+      items[i].classList.toggle('active', i===idx);
+    }
+  }
+  function attachWheelHighlight(el){
+    let ticking = false;
+    el.addEventListener('scroll', ()=>{
+      if(ticking) return;
+      ticking = true;
+      requestAnimationFrame(()=>{ updateWheelHighlight(el); ticking = false; });
+    });
+  }
+  buildWheel(wheelHoursEl, 5);
+  buildWheel(wheelMinutesEl, 59);
+  buildWheel(wheelSecondsEl, 59);
+  attachWheelHighlight(wheelHoursEl);
+  attachWheelHighlight(wheelMinutesEl);
+  attachWheelHighlight(wheelSecondsEl);
  
   function openEditor(id){
     editingId = id;
@@ -545,9 +649,17 @@ body{
     modalTitle.textContent = isNew ? 'Neues Profil' : 'Profil bearbeiten';
     const p = isNew ? { name:'', minutes:25 } : profiles.find(pr=>pr.id===id);
     nameInput.value = p.name;
-    minutesInput.value = p.minutes;
+    const totalSeconds = Math.round(p.minutes*60);
+    const hh = Math.min(5, Math.floor(totalSeconds/3600));
+    const mm = Math.floor((totalSeconds%3600)/60);
+    const ss = totalSeconds%60;
+    setWheelValue(wheelHoursEl, hh);
+    setWheelValue(wheelMinutesEl, mm);
+    setWheelValue(wheelSecondsEl, ss);
+    updateWheelHighlight(wheelHoursEl);
+    updateWheelHighlight(wheelMinutesEl);
+    updateWheelHighlight(wheelSecondsEl);
     deleteBtn.style.display = (!isNew && profiles.length>1) ? 'block' : 'none';
-    updateChipHighlight();
     modalBackdrop.classList.add('show');
     setTimeout(()=>nameInput.focus(), 200);
   }
@@ -555,28 +667,18 @@ body{
     modalBackdrop.classList.remove('show');
     editingId = null;
   }
-  function updateChipHighlight(){
-    const v = Number(minutesInput.value);
-    document.querySelectorAll('.chip').forEach(c=>{
-      c.classList.toggle('active', Number(c.dataset.min)===v);
-    });
-  }
-  document.getElementById('presetChips').addEventListener('click', (e)=>{
-    const chip = e.target.closest('.chip');
-    if(!chip) return;
-    minutesInput.value = chip.dataset.min;
-    updateChipHighlight();
-  });
-  minutesInput.addEventListener('input', updateChipHighlight);
  
   document.getElementById('modalCancel').addEventListener('click', closeEditor);
   modalBackdrop.addEventListener('click', (e)=>{ if(e.target===modalBackdrop) closeEditor(); });
  
   document.getElementById('modalSave').addEventListener('click', ()=>{
     let name = nameInput.value.trim();
-    let minutes = Math.round(Number(minutesInput.value));
-    if(!isFinite(minutes) || minutes<1) minutes = 1;
-    if(minutes>180) minutes = 180;
+    const hh = getWheelValue(wheelHoursEl);
+    const mm = getWheelValue(wheelMinutesEl);
+    const ss = getWheelValue(wheelSecondsEl);
+    let totalSeconds = hh*3600 + mm*60 + ss;
+    if(totalSeconds < 60) totalSeconds = 60;
+    const minutes = totalSeconds / 60;
  
     if(editingId===null){
       const id = nextId();
@@ -616,6 +718,7 @@ body{
   const BURN_TRACK_H = 300; // keep in sync with .candle--burning --h
   const STUB_H = 14;
   const burnWaxBody = document.getElementById('burnWaxBody');
+  const burnWaxTrack = document.querySelector('#burnCandle .wax-track');
   const burnCandle = document.getElementById('burnCandle');
   const burnTimeEl = document.getElementById('burnTime');
   const burnLabelEl = document.getElementById('burnLabel');
@@ -624,6 +727,54 @@ body{
   let burnInterval = null;
   let burnTimeout = null;
   let burnEnd = 0;
+  let burnStartTs = 0;
+  let burnTotalMs = 0;
+  let burnActive = false;
+  let dripTimeout = null;
+ 
+  function spawnDrip(){
+    if(!burnActive) return;
+    const elapsed = Date.now() - burnStartTs;
+    const frac = Math.min(1, Math.max(0, elapsed / burnTotalMs));
+    const currentWaxH = BURN_TRACK_H - (BURN_TRACK_H - STUB_H) * frac;
+    if(currentWaxH < 22){ return; } // too little wax left to drip
+ 
+    const drip = document.createElement('div');
+    drip.className = 'flow-drip';
+ 
+    const width = 3 + Math.random()*6;        // 3–9px: sometimes a thin trickle, sometimes a fat bead
+    const startHeight = 3 + Math.random()*3;   // 3–6px
+    const growHeight = 9 + Math.random()*17;   // 9–26px: how long the drip stretches
+    const leftPct = 14 + Math.random()*72;     // spread across most of the candle width
+    const brightness = 0.86 + Math.random()*0.3;
+    const roundness = 50 + Math.random()*30;   // slightly different tip shape each time
+ 
+    drip.style.width = width.toFixed(1) + 'px';
+    drip.style.left = leftPct.toFixed(1) + '%';
+    drip.style.top = (BURN_TRACK_H - currentWaxH) + 'px';
+    drip.style.height = startHeight.toFixed(1) + 'px';
+    drip.style.borderRadius = '0 0 50% 50% / 0 0 ' + roundness.toFixed(0) + '% ' + roundness.toFixed(0) + '%';
+    drip.style.filter = 'brightness(' + brightness.toFixed(2) + ')';
+    burnWaxTrack.appendChild(drip);
+ 
+    const fallMs = 6500 + Math.random()*6500; // 6.5–13s: a slow, real trickle rather than a quick slide
+    requestAnimationFrame(()=>{
+      drip.style.transition =
+        'top ' + (fallMs/1000) + 's cubic-bezier(.42,.03,.58,.97), ' +
+        'height ' + (fallMs/1000) + 's ease-out';
+      drip.style.top = BURN_TRACK_H + 'px';
+      drip.style.height = growHeight.toFixed(1) + 'px';
+      setTimeout(()=>{ if(drip.style) drip.style.opacity = '0'; }, fallMs*0.72);
+    });
+    setTimeout(()=>{ drip.remove(); }, fallMs + 700);
+  }
+  function scheduleDrip(){
+    clearTimeout(dripTimeout);
+    dripTimeout = setTimeout(()=>{
+      spawnDrip();
+      scheduleDrip();
+    }, 5500 + Math.random()*8500); // 5.5–14s between new drips starting
+  }
  
   function startBurning(){
     const profile = getActiveProfile();
@@ -632,6 +783,7 @@ body{
     burnLabelEl.textContent = profile.name;
     finishedOverlay.classList.remove('show');
     burnCandle.classList.remove('extinguished');
+    burnWaxTrack.querySelectorAll('.flow-drip').forEach(d=>d.remove());
  
     burnWaxBody.style.transition = 'none';
     burnWaxBody.style.height = BURN_TRACK_H + 'px';
@@ -642,12 +794,16 @@ body{
       burnWaxBody.style.height = STUB_H + 'px';
     });
  
-    burnEnd = Date.now() + totalMs;
+    burnStartTs = Date.now();
+    burnTotalMs = totalMs;
+    burnEnd = burnStartTs + totalMs;
+    burnActive = true;
     clearInterval(burnInterval);
     clearTimeout(burnTimeout);
     updateBurnTime();
     burnInterval = setInterval(updateBurnTime, 250);
     burnTimeout = setTimeout(finishBurning, totalMs);
+    scheduleDrip();
  
     showView('burn');
   }
@@ -661,6 +817,8 @@ body{
  
   function finishBurning(){
     clearInterval(burnInterval);
+    burnActive = false;
+    clearTimeout(dripTimeout);
     burnTimeEl.textContent = '00:00';
     burnCandle.classList.add('extinguished');
     setTimeout(()=>finishedOverlay.classList.add('show'), 900);
@@ -669,6 +827,8 @@ body{
   function stopBurning(){
     clearInterval(burnInterval);
     clearTimeout(burnTimeout);
+    burnActive = false;
+    clearTimeout(dripTimeout);
     finishedOverlay.classList.remove('show');
     document.getElementById('backArrow').classList.remove('show');
     showView('menu');
