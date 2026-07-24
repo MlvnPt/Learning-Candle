@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0e0b09">
+<title>Flamme</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%230e0b09'/%3E%3Crect x='44' y='34' width='12' height='42' rx='4' fill='%23e6d9b8'/%3E%3Cellipse cx='50' cy='24' rx='9' ry='14' fill='%23ffab3d'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230e0b09'/%3E%3Crect x='44' y='34' width='12' height='42' rx='4' fill='%23e6d9b8'/%3E%3Cellipse cx='50' cy='24' rx='9' ry='14' fill='%23ffab3d'/%3E%3C/svg%3E">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&display=swap');
+
+:root{
+  --bg: #0d0a08;
+  --bg-vignette: #050403;
+  --panel: #17130f;
+  --panel-line: #2a231b;
+  --ivory: #e7d9b8;
+  --ivory-dark: #ad9868;
+  --wax-shadow: #5f4c30;
+  --tray-light: #d3cabb;
+  --tray-mid: #948c7c;
+  --tray-dark: #4a473f;
+  --flame-core: #fff3c4;
+  --flame-mid: #ffa63d;
+  --flame-outer: #cf4419;
+  --green: #52794f;
+  --green-dark: #395536;
+  --amber: #a8672c;
+  --amber-dark: #7c4c20;
+  --text: #ece3d0;
+  --text-dim: #8c8375;
+  --danger: #8a3b32;
+}
+
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  min-height:100vh;
+  min-height:100dvh;
+  background:
+    radial-gradient(ellipse at 50% 30%, #1c1712 0%, var(--bg) 55%, var(--bg-vignette) 100%);
+  color:var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow:hidden;
+  user-select:none;
+  -webkit-user-select:none;
+}
+
+.noise{
+  position:fixed; inset:0; pointer-events:none; opacity:.05; mix-blend-mode:overlay; z-index:1;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.view{
+  position:fixed; inset:0;
+  display:flex; flex-direction:column; align-items:center;
+  opacity:0; pointer-events:none;
+  transition:opacity .45s ease;
+  z-index:2;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+.view.active{ opacity:1; pointer-events:auto; }
+
+/* ---------- MENU ---------- */
+#view-menu{ justify-content:center; gap:28px; padding-bottom: 6vh; }
+.eyebrow{
+  position:absolute; top:calc(env(safe-area-inset-top) + 26px);
+  font-family:'Cormorant Garamond', serif;
+  letter-spacing:.35em; font-size:12px; color:var(--text-dim); text-transform:uppercase;
+}
+.menu-sub{
+  font-family:'Cormorant Garamond', serif;
+  font-size:17px; color:var(--text-dim); letter-spacing:.02em; min-height:22px;
+}
+.btn-stack{ display:flex; flex-direction:column; align-items:center; gap:14px; margin-top:6px; }
+.btn{
+  border:none; border-radius:999px; cursor:pointer;
+  font-family:'Cormorant Garamond', serif; font-weight:600; letter-spacing:.08em;
+  text-transform:uppercase; color:#f4efe3;
+  transition:transform .12s ease, filter .12s ease;
+}
+.btn:active{ transform:scale(.96); filter:brightness(.92); }
+.btn:focus-visible{ outline:2px solid var(--ivory); outline-offset:3px; }
+.btn-start{
+  width:172px; padding:16px 0; font-size:22px;
+  background:linear-gradient(180deg, var(--green), var(--green-dark));
+  box-shadow:0 6px 18px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.15);
+}
+.btn-time{
+  width:130px; padding:10px 0; font-size:16px;
+  background:linear-gradient(180deg, var(--amber), var(--amber-dark));
+  box-shadow:0 4px 14px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.15);
+}
+
+/* ---------- CANDLE ---------- */
+.stage{ position:relative; display:flex; flex-direction:column; align-items:center; }
+.candle{
+  --w:58px; --h:132px; --tw:98px; --th:20px;
+  position:relative;
+}
+.candle--burning{ --w:92px; --h:300px; --tw:154px; --th:32px; }
+
+.tray{
+  position:relative; z-index:1;
+  width:var(--tw); height:var(--th); border-radius:50%;
+  background:radial-gradient(ellipse at 35% 28%, var(--tray-light), var(--tray-mid) 60%, var(--tray-dark) 100%);
+  box-shadow:0 8px 18px rgba(0,0,0,.55), inset 0 2px 3px rgba(255,255,255,.35), inset 0 -4px 7px rgba(0,0,0,.45);
+  margin-top:-6px;
+}
+
+.wax-track{
+  position:absolute; bottom:calc(var(--th) * 0.55); left:50%;
+  transform:translateX(-50%);
+  width:var(--w); height:var(--h);
+}
+.drip{
+  position:absolute; bottom:2px; width:12%; border-radius:0 0 50% 50% / 0 0 65% 65%;
+  background:linear-gradient(var(--ivory), var(--ivory-dark));
+  opacity:.85; z-index:2;
+}
+.drip.a{ left:-4%; height:22%; }
+.drip.b{ right:-3%; height:16%; }
+.drip.c{ left:38%; height:12%; }
+
+.wax-body{
+  position:absolute; bottom:0; left:0; width:100%;
+  border-radius:7px 7px 3px 3px;
+  background:linear-gradient(90deg, var(--ivory-dark), var(--ivory) 42%, var(--ivory) 58%, var(--ivory-dark));
+  box-shadow:inset -5px 0 9px rgba(0,0,0,.35), inset 5px 0 6px rgba(255,255,255,.18);
+  background-image:
+    repeating-linear-gradient(0deg, rgba(0,0,0,.05) 0 2px, transparent 2px 14px),
+    linear-gradient(90deg, var(--ivory-dark), var(--ivory) 42%, var(--ivory) 58%, var(--ivory-dark));
+}
+.wax-body::before{
+  content:''; position:absolute; top:-5px; left:50%; transform:translateX(-50%);
+  width:90%; height:11px; border-radius:50%;
+  background:radial-gradient(ellipse at 50% 30%, var(--ivory) 0%, var(--ivory-dark) 65%, var(--wax-shadow) 100%);
+}
+.wick{
+  position:absolute; top:-15px; left:50%; transform:translateX(-50%);
+  width:4px; height:13px; border-radius:2px 2px 0 0;
+  background:linear-gradient(#3a322a, #17130f);
+}
+.candle--burning .wick{ top:-20px; width:5px; height:17px; }
+
+.flame-wrap{
+  position:absolute; top:-42px; left:50%; transform:translateX(-50%);
+  width:10px; height:10px; pointer-events:none;
+}
+.candle--burning .flame-wrap{ top:-58px; }
+.flame-glow{
+  position:absolute; inset:-26px; border-radius:50%;
+  background:radial-gradient(circle, rgba(255,175,70,.5), rgba(255,120,30,.14) 42%, transparent 72%);
+  filter:blur(5px);
+  animation:glowPulse 2.6s ease-in-out infinite;
+}
+.candle--burning .flame-glow{ inset:-46px; }
+.flame{
+  position:absolute; bottom:0; left:50%; width:13px; height:24px;
+  transform-origin:bottom center; transform:translateX(-50%);
+  border-radius:50% 50% 50% 50% / 62% 62% 38% 38%;
+  background:radial-gradient(ellipse at 50% 72%, var(--flame-core), var(--flame-mid) 55%, var(--flame-outer) 100%);
+  animation:flicker 2.1s ease-in-out infinite;
+}
+.candle--burning .flame{ width:18px; height:34px; }
+
+.candle.extinguished .flame,
+.candle.extinguished .flame-glow{ opacity:0; transition:opacity 1.4s ease; }
+.candle.extinguished .wick{ opacity:.6; }
+
+@keyframes flicker{
+  0%,100%{ transform:translateX(-50%) scale(1) rotate(0deg); }
+  22%{ transform:translateX(-50%) scale(1.06,.93) rotate(-3deg); }
+  50%{ transform:translateX(-50%) scale(.93,1.07) rotate(2deg); }
+  76%{ transform:translateX(-50%) scale(1.03,.97) rotate(-2deg); }
+}
+@keyframes glowPulse{
+  0%,100%{ opacity:.82; transform:scale(1); }
+  50%{ opacity:1; transform:scale(1.09); }
+}
+@media (prefers-reduced-motion: reduce){
+  .flame, .flame-glow{ animation:none; }
+}
+
+/* ---------- TIME / PROFILES ---------- */
+#view-time{ align-items:stretch; padding-top:calc(env(safe-area-inset-top) + 20px); }
+.time-header{
+  display:flex; align-items:center; gap:14px;
+  padding:4px 20px 18px;
+}
+.icon-btn-plain{
+  background:none; border:none; color:var(--text); font-size:22px; line-height:1;
+  cursor:pointer; padding:6px;
+}
+.time-title{
+  font-family:'Cormorant Garamond', serif; font-size:22px; letter-spacing:.05em; text-transform:uppercase; color:var(--text);
+}
+.profile-list{ flex:1; overflow-y:auto; padding:4px 20px 20px; display:flex; flex-direction:column; gap:10px; }
+.profile-row{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  background:var(--panel); border:1px solid var(--panel-line); border-radius:14px;
+  padding:14px 16px; cursor:pointer; transition:border-color .15s ease, background .15s ease;
+}
+.profile-row.selected{ border-color:var(--amber); background:#1e1912; }
+.profile-info{ display:flex; flex-direction:column; gap:2px; min-width:0; }
+.profile-name{ font-size:17px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.profile-minutes{ font-size:13px; color:var(--text-dim); }
+.profile-check{ width:18px; text-align:center; color:var(--amber); font-size:16px; opacity:0; }
+.profile-row.selected .profile-check{ opacity:1; }
+.edit-btn{
+  background:none; border:none; color:var(--text-dim); font-size:18px; cursor:pointer; padding:6px 4px;
+}
+.add-profile-btn{
+  margin:6px 20px 26px; padding:14px; border-radius:14px; border:1px dashed var(--panel-line);
+  background:none; color:var(--text-dim); font-family:'Cormorant Garamond', serif; font-size:16px;
+  letter-spacing:.05em; cursor:pointer;
+}
+.add-profile-btn:active{ background:var(--panel); }
+
+/* ---------- EDITOR MODAL ---------- */
+.modal-backdrop{
+  position:fixed; inset:0; background:rgba(4,3,2,.65); z-index:10;
+  display:flex; align-items:flex-end; justify-content:center;
+  opacity:0; pointer-events:none; transition:opacity .25s ease;
+}
+.modal-backdrop.show{ opacity:1; pointer-events:auto; }
+.modal{
+  width:100%; max-width:480px; background:var(--panel);
+  border-radius:22px 22px 0 0; padding:26px 22px calc(26px + env(safe-area-inset-bottom));
+  transform:translateY(12px); transition:transform .25s ease;
+  border-top:1px solid var(--panel-line);
+}
+.modal-backdrop.show .modal{ transform:translateY(0); }
+.modal h2{ margin:0 0 18px; font-family:'Cormorant Garamond', serif; font-size:21px; letter-spacing:.04em; color:var(--text); }
+.field{ margin-bottom:16px; }
+.field label{ display:block; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--text-dim); margin-bottom:6px; }
+.field input[type="text"], .field input[type="number"]{
+  width:100%; background:#0f0c09; border:1px solid var(--panel-line); border-radius:10px;
+  padding:12px 14px; color:var(--text); font-size:16px; font-family:inherit;
+}
+.field input:focus{ outline:2px solid var(--amber); outline-offset:1px; }
+.presets{ display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+.chip{
+  border:1px solid var(--panel-line); background:none; color:var(--text-dim);
+  border-radius:999px; padding:6px 13px; font-size:13px; cursor:pointer;
+}
+.chip.active{ border-color:var(--amber); color:var(--text); }
+.modal-actions{ display:flex; gap:10px; margin-top:20px; }
+.modal-actions .btn-save{
+  flex:1; background:linear-gradient(180deg, var(--green), var(--green-dark)); color:#f4efe3;
+  border:none; border-radius:12px; padding:13px 0; font-size:16px; font-weight:600; cursor:pointer;
+}
+.modal-actions .btn-cancel{
+  background:none; border:1px solid var(--panel-line); color:var(--text-dim);
+  border-radius:12px; padding:13px 18px; font-size:15px; cursor:pointer;
+}
+.btn-delete{
+  margin-top:14px; width:100%; background:none; border:none; color:var(--danger);
+  font-size:14px; padding:6px; cursor:pointer;
+}
+
+/* ---------- BURN VIEW ---------- */
+#view-burn{ justify-content:center; }
+.burn-label{
+  position:absolute; top:calc(env(safe-area-inset-top) + 40px); left:0; right:0;
+  text-align:center; font-family:'Cormorant Garamond', serif; color:var(--text-dim);
+  letter-spacing:.08em; font-size:14px; text-transform:uppercase;
+}
+.burn-time{
+  margin-top:26px; font-family:'Cormorant Garamond', serif; font-size:26px; color:var(--text-dim); letter-spacing:.06em;
+}
+.back-arrow{
+  position:fixed; top:calc(env(safe-area-inset-top) + 18px); left:18px; z-index:5;
+  width:44px; height:44px; border-radius:50%; border:1px solid var(--panel-line);
+  background:rgba(20,16,12,.85); color:var(--text); font-size:20px;
+  display:flex; align-items:center; justify-content:center;
+  opacity:0; pointer-events:none; transition:opacity .25s ease;
+}
+.back-arrow.show{ opacity:1; pointer-events:auto; }
+
+.finished-overlay{
+  position:fixed; inset:0; z-index:4; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px;
+  background:rgba(6,5,3,0); pointer-events:none; opacity:0; transition:opacity .8s ease, background .8s ease;
+  text-align:center; padding:0 30px;
+}
+.finished-overlay.show{ opacity:1; pointer-events:auto; background:rgba(6,5,3,.55); }
+.finished-overlay p{ font-family:'Cormorant Garamond', serif; font-size:22px; color:var(--text); letter-spacing:.03em; margin:0; }
+.finished-overlay .btn{ padding:13px 34px; font-size:16px; background:linear-gradient(180deg, var(--amber), var(--amber-dark)); }
+</style>
+</head>
+<body>
+
+<div class="noise"></div>
+
+<!-- MENU -->
+<div id="view-menu" class="view active">
+  <div class="eyebrow">Konzentration</div>
+  <div class="stage">
+    <div class="candle candle--idle" id="menuCandle">
+      <div class="wax-track">
+        <div class="drip a"></div><div class="drip b"></div><div class="drip c"></div>
+        <div class="wax-body" id="menuWaxBody" style="height:132px;">
+          <div class="wick"></div>
+          <div class="flame-wrap"><div class="flame-glow"></div><div class="flame"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="tray"></div>
+  </div>
+  <div class="menu-sub" id="menuSub"></div>
+  <div class="btn-stack">
+    <button class="btn btn-start" id="startBtn">Start</button>
+    <button class="btn btn-time" id="timeBtn">Time</button>
+  </div>
+</div>
+
+<!-- TIME / PROFILES -->
+<div id="view-time" class="view">
+  <div class="time-header">
+    <button class="icon-btn-plain" id="timeBack" aria-label="Zurück">←</button>
+    <div class="time-title">Time</div>
+  </div>
+  <div class="profile-list" id="profileList"></div>
+  <button class="add-profile-btn" id="addProfileBtn">+ Neues Profil</button>
+</div>
+
+<!-- BURN -->
+<div id="view-burn" class="view">
+  <div class="burn-label" id="burnLabel"></div>
+  <div class="stage">
+    <div class="candle candle--burning" id="burnCandle">
+      <div class="wax-track">
+        <div class="drip a"></div><div class="drip b"></div><div class="drip c"></div>
+        <div class="wax-body" id="burnWaxBody" style="height:300px;">
+          <div class="wick"></div>
+          <div class="flame-wrap"><div class="flame-glow"></div><div class="flame"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="tray"></div>
+  </div>
+  <div class="burn-time" id="burnTime">00:00</div>
+</div>
+
+<button class="back-arrow" id="backArrow" aria-label="Zurück zum Menü">←</button>
+
+<div class="finished-overlay" id="finishedOverlay">
+  <p>Die Kerze ist erloschen.</p>
+  <button class="btn" id="finishedBackBtn">Zurück zum Menü</button>
+</div>
+
+<!-- EDITOR MODAL -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <h2 id="modalTitle">Profil bearbeiten</h2>
+    <div class="field">
+      <label for="profileNameInput">Name</label>
+      <input type="text" id="profileNameInput" maxlength="24" placeholder="Profilname">
+    </div>
+    <div class="field">
+      <label for="profileMinutesInput">Lernzeit (Minuten)</label>
+      <input type="number" id="profileMinutesInput" min="1" max="180" inputmode="numeric">
+      <div class="presets" id="presetChips">
+        <button type="button" class="chip" data-min="15">15</button>
+        <button type="button" class="chip" data-min="25">25</button>
+        <button type="button" class="chip" data-min="45">45</button>
+        <button type="button" class="chip" data-min="60">60</button>
+        <button type="button" class="chip" data-min="90">90</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="modalCancel">Abbrechen</button>
+      <button class="btn-save" id="modalSave">Speichern</button>
+    </div>
+    <button class="btn-delete" id="modalDelete">Profil löschen</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- storage (falls back to memory if localStorage is unavailable) ---------- */
+  const memoryStore = {};
+  function storeGet(key){
+    try { return localStorage.getItem(key); } catch(e){ return memoryStore[key] ?? null; }
+  }
+  function storeSet(key, value){
+    try { localStorage.setItem(key, value); } catch(e){ memoryStore[key] = value; }
+  }
+
+  const DEFAULT_PROFILES = [
+    { id:1, name:'Profil 1', minutes:25 },
+    { id:2, name:'Profil 2', minutes:45 },
+    { id:3, name:'Profil 3', minutes:60 }
+  ];
+
+  let profiles = [];
+  let activeId = null;
+
+  function loadProfiles(){
+    try{
+      const raw = storeGet('flamme_profiles');
+      profiles = raw ? JSON.parse(raw) : JSON.parse(JSON.stringify(DEFAULT_PROFILES));
+    }catch(e){ profiles = JSON.parse(JSON.stringify(DEFAULT_PROFILES)); }
+    if(!Array.isArray(profiles) || profiles.length===0){ profiles = JSON.parse(JSON.stringify(DEFAULT_PROFILES)); }
+    activeId = storeGet('flamme_active');
+    activeId = activeId ? Number(activeId) : profiles[0].id;
+    if(!profiles.find(p=>p.id===activeId)) activeId = profiles[0].id;
+  }
+  function saveProfiles(){
+    storeSet('flamme_profiles', JSON.stringify(profiles));
+    storeSet('flamme_active', String(activeId));
+  }
+  function getActiveProfile(){
+    return profiles.find(p=>p.id===activeId) || profiles[0];
+  }
+  function nextId(){
+    return profiles.reduce((m,p)=>Math.max(m,p.id),0) + 1;
+  }
+
+  /* ---------- view switching ---------- */
+  const views = {
+    menu: document.getElementById('view-menu'),
+    time: document.getElementById('view-time'),
+    burn: document.getElementById('view-burn')
+  };
+  function showView(name){
+    Object.values(views).forEach(v=>v.classList.remove('active'));
+    views[name].classList.add('active');
+  }
+
+  function renderMenuSub(){
+    const p = getActiveProfile();
+    document.getElementById('menuSub').textContent = p.name + ' · ' + p.minutes + ' Min';
+  }
+
+  /* ---------- profile list rendering ---------- */
+  const profileListEl = document.getElementById('profileList');
+  function renderProfileList(){
+    profileListEl.innerHTML = '';
+    profiles.forEach(p=>{
+      const row = document.createElement('div');
+      row.className = 'profile-row' + (p.id===activeId ? ' selected' : '');
+      row.dataset.id = p.id;
+      row.innerHTML =
+        '<div class="profile-check">✓</div>' +
+        '<div class="profile-info">' +
+          '<span class="profile-name"></span>' +
+          '<span class="profile-minutes"></span>' +
+        '</div>' +
+        '<button class="edit-btn" aria-label="Bearbeiten" data-id="'+p.id+'">✎</button>';
+      row.querySelector('.profile-name').textContent = p.name;
+      row.querySelector('.profile-minutes').textContent = p.minutes + ' Min';
+      row.addEventListener('click', (e)=>{
+        if(e.target.closest('.edit-btn')) return;
+        activeId = p.id;
+        saveProfiles();
+        renderProfileList();
+        renderMenuSub();
+      });
+      row.querySelector('.edit-btn').addEventListener('click', (e)=>{
+        e.stopPropagation();
+        openEditor(p.id);
+      });
+      profileListEl.appendChild(row);
+    });
+  }
+
+  /* ---------- editor modal ---------- */
+  const modalBackdrop = document.getElementById('modalBackdrop');
+  const modalTitle = document.getElementById('modalTitle');
+  const nameInput = document.getElementById('profileNameInput');
+  const minutesInput = document.getElementById('profileMinutesInput');
+  const deleteBtn = document.getElementById('modalDelete');
+  let editingId = null;
+
+  function openEditor(id){
+    editingId = id;
+    const isNew = id===null;
+    modalTitle.textContent = isNew ? 'Neues Profil' : 'Profil bearbeiten';
+    const p = isNew ? { name:'', minutes:25 } : profiles.find(pr=>pr.id===id);
+    nameInput.value = p.name;
+    minutesInput.value = p.minutes;
+    deleteBtn.style.display = (!isNew && profiles.length>1) ? 'block' : 'none';
+    updateChipHighlight();
+    modalBackdrop.classList.add('show');
+    setTimeout(()=>nameInput.focus(), 200);
+  }
+  function closeEditor(){
+    modalBackdrop.classList.remove('show');
+    editingId = null;
+  }
+  function updateChipHighlight(){
+    const v = Number(minutesInput.value);
+    document.querySelectorAll('.chip').forEach(c=>{
+      c.classList.toggle('active', Number(c.dataset.min)===v);
+    });
+  }
+  document.getElementById('presetChips').addEventListener('click', (e)=>{
+    const chip = e.target.closest('.chip');
+    if(!chip) return;
+    minutesInput.value = chip.dataset.min;
+    updateChipHighlight();
+  });
+  minutesInput.addEventListener('input', updateChipHighlight);
+
+  document.getElementById('modalCancel').addEventListener('click', closeEditor);
+  modalBackdrop.addEventListener('click', (e)=>{ if(e.target===modalBackdrop) closeEditor(); });
+
+  document.getElementById('modalSave').addEventListener('click', ()=>{
+    let name = nameInput.value.trim();
+    let minutes = Math.round(Number(minutesInput.value));
+    if(!isFinite(minutes) || minutes<1) minutes = 1;
+    if(minutes>180) minutes = 180;
+
+    if(editingId===null){
+      const id = nextId();
+      if(!name) name = 'Profil ' + id;
+      profiles.push({ id, name, minutes });
+      activeId = id;
+    } else {
+      const p = profiles.find(pr=>pr.id===editingId);
+      if(!name) name = p.name;
+      p.name = name;
+      p.minutes = minutes;
+    }
+    saveProfiles();
+    renderProfileList();
+    renderMenuSub();
+    closeEditor();
+  });
+
+  deleteBtn.addEventListener('click', ()=>{
+    if(editingId===null || profiles.length<=1) return;
+    profiles = profiles.filter(p=>p.id!==editingId);
+    if(activeId===editingId) activeId = profiles[0].id;
+    saveProfiles();
+    renderProfileList();
+    renderMenuSub();
+    closeEditor();
+  });
+
+  document.getElementById('addProfileBtn').addEventListener('click', ()=>openEditor(null));
+
+  /* ---------- navigation ---------- */
+  document.getElementById('timeBtn').addEventListener('click', ()=>{
+    renderProfileList();
+    showView('time');
+  });
+  document.getElementById('timeBack').addEventListener('click', ()=>showView('menu'));
+
+  /* ---------- burning logic ---------- */
+  const BURN_TRACK_H = 300; // keep in sync with .candle--burning --h
+  const STUB_H = 14;
+  const burnWaxBody = document.getElementById('burnWaxBody');
+  const burnCandle = document.getElementById('burnCandle');
+  const burnTimeEl = document.getElementById('burnTime');
+  const burnLabelEl = document.getElementById('burnLabel');
+  const finishedOverlay = document.getElementById('finishedOverlay');
+
+  let burnInterval = null;
+  let burnTimeout = null;
+  let burnEnd = 0;
+
+  function startBurning(){
+    const profile = getActiveProfile();
+    const totalMs = profile.minutes * 60000;
+
+    burnLabelEl.textContent = profile.name;
+    finishedOverlay.classList.remove('show');
+    burnCandle.classList.remove('extinguished');
+
+    burnWaxBody.style.transition = 'none';
+    burnWaxBody.style.height = BURN_TRACK_H + 'px';
+    // force reflow so the browser registers the reset before animating
+    void burnWaxBody.offsetHeight;
+    burnWaxBody.style.transition = 'height ' + (totalMs/1000) + 's linear';
+    requestAnimationFrame(()=>{
+      burnWaxBody.style.height = STUB_H + 'px';
+    });
+
+    burnEnd = Date.now() + totalMs;
+    clearInterval(burnInterval);
+    clearTimeout(burnTimeout);
+    updateBurnTime();
+    burnInterval = setInterval(updateBurnTime, 250);
+    burnTimeout = setTimeout(finishBurning, totalMs);
+
+    showView('burn');
+  }
+
+  function updateBurnTime(){
+    const remain = Math.max(0, burnEnd - Date.now());
+    const m = Math.floor(remain/60000);
+    const s = Math.floor((remain%60000)/1000);
+    burnTimeEl.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  }
+
+  function finishBurning(){
+    clearInterval(burnInterval);
+    burnTimeEl.textContent = '00:00';
+    burnCandle.classList.add('extinguished');
+    setTimeout(()=>finishedOverlay.classList.add('show'), 900);
+  }
+
+  function stopBurning(){
+    clearInterval(burnInterval);
+    clearTimeout(burnTimeout);
+    finishedOverlay.classList.remove('show');
+    document.getElementById('backArrow').classList.remove('show');
+    showView('menu');
+  }
+
+  document.getElementById('startBtn').addEventListener('click', startBurning);
+  document.getElementById('finishedBackBtn').addEventListener('click', stopBurning);
+
+  /* ---------- double-tap to reveal back arrow during burn ---------- */
+  const backArrow = document.getElementById('backArrow');
+  let lastTap = 0;
+  let hideArrowTO = null;
+  views.burn.addEventListener('click', (e)=>{
+    if(e.target.closest('.back-arrow')) return;
+    const now = Date.now();
+    if(now - lastTap < 350){
+      backArrow.classList.add('show');
+      clearTimeout(hideArrowTO);
+      hideArrowTO = setTimeout(()=>backArrow.classList.remove('show'), 3000);
+    }
+    lastTap = now;
+  });
+  backArrow.addEventListener('click', stopBurning);
+
+  /* ---------- init ---------- */
+  loadProfiles();
+  renderMenuSub();
+})();
+</script>
+</body>
+</html>
