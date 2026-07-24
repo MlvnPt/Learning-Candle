@@ -33,7 +33,7 @@
   --text-dim: #8c8375;
   --danger: #8a3b32;
 }
-
+ 
 *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 html{
   height:100%; margin:0; padding:0;
@@ -52,12 +52,12 @@ body{
   user-select:none;
   -webkit-user-select:none;
 }
-
+ 
 .noise{
   position:fixed; inset:0; pointer-events:none; opacity:.05; mix-blend-mode:overlay; z-index:1;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
-
+ 
 .view{
   position:fixed; inset:0;
   display:flex; flex-direction:column; align-items:center;
@@ -67,9 +67,9 @@ body{
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 .view.active{ opacity:1; pointer-events:auto; }
-
+ 
 /* ---------- MENU ---------- */
-#view-menu{ justify-content:flex-start; gap:30px; padding-top:20vh; }
+#view-menu{ justify-content:flex-start; gap:30px; padding-top:12vh; }
 .eyebrow{
   position:absolute; top:calc(env(safe-area-inset-top) + 26px);
   font-family:'Times New Roman', Times, serif;
@@ -98,15 +98,16 @@ body{
   background:linear-gradient(180deg, var(--amber), var(--amber-dark));
   box-shadow:0 4px 14px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.15);
 }
-
+ 
 /* ---------- CANDLE ---------- */
 .stage{ position:relative; display:flex; flex-direction:column; align-items:center; }
 .candle{
-  --w:76px; --h:174px; --tw:124px; --th:24px;
+  --w:76px; --h:174px; --tw:124px; --th:24px; --oh:96px;
   position:relative;
+  height: calc(var(--h) + var(--oh));
 }
-.candle--burning{ --w:92px; --h:300px; --tw:154px; --th:32px; }
-
+.candle--burning{ --w:92px; --h:300px; --tw:154px; --th:32px; --oh:120px; }
+ 
 .tray{
   position:relative; z-index:1;
   width:var(--tw); height:var(--th); border-radius:50%;
@@ -114,9 +115,9 @@ body{
   box-shadow:0 8px 18px rgba(0,0,0,.55), inset 0 2px 3px rgba(255,255,255,.35), inset 0 -4px 7px rgba(0,0,0,.45);
   margin-top:-6px;
 }
-
+ 
 .wax-track{
-  position:absolute; bottom:calc(var(--th) * 0.55); left:50%;
+  position:absolute; bottom:0; left:50%;
   transform:translateX(-50%);
   width:var(--w); height:var(--h);
 }
@@ -128,7 +129,7 @@ body{
 .drip.a{ left:-4%; height:22%; }
 .drip.b{ right:-3%; height:16%; }
 .drip.c{ left:38%; height:12%; }
-
+ 
 .wax-body{
   position:absolute; bottom:0; left:0; width:100%;
   border-radius:7px 7px 3px 3px;
@@ -149,7 +150,7 @@ body{
   background:linear-gradient(#3a322a, #17130f);
 }
 .candle--burning .wick{ top:-20px; width:5px; height:17px; }
-
+ 
 .flame-wrap{
   position:absolute; top:-50px; left:50%; transform:translateX(-50%);
   width:10px; height:10px; pointer-events:none;
@@ -170,11 +171,11 @@ body{
   animation:flicker 2.1s ease-in-out infinite;
 }
 .candle--burning .flame{ width:18px; height:34px; }
-
+ 
 .candle.extinguished .flame,
 .candle.extinguished .flame-glow{ opacity:0; transition:opacity 1.4s ease; }
 .candle.extinguished .wick{ opacity:.6; }
-
+ 
 @keyframes flicker{
   0%,100%{ transform:translateX(-50%) scale(1) rotate(0deg); }
   22%{ transform:translateX(-50%) scale(1.06,.93) rotate(-3deg); }
@@ -188,7 +189,7 @@ body{
 @media (prefers-reduced-motion: reduce){
   .flame, .flame-glow{ animation:none; }
 }
-
+ 
 /* ---------- TIME / PROFILES ---------- */
 #view-time{ align-items:stretch; padding-top:calc(env(safe-area-inset-top) + 18px); }
 .ui-sans{ font-family:'Times New Roman', Times, serif; }
@@ -266,7 +267,7 @@ body{
   cursor:pointer;
 }
 .add-profile-box:active{ background:rgba(255,255,255,.04); border-color:var(--amber); color:var(--text); }
-
+ 
 /* ---------- EDITOR MODAL ---------- */
 .modal-backdrop{
   position:fixed; inset:0; background:rgba(4,3,2,.65); z-index:10;
@@ -308,7 +309,7 @@ body{
   margin-top:14px; width:100%; background:none; border:none; color:var(--danger);
   font-size:14px; padding:6px; cursor:pointer;
 }
-
+ 
 /* ---------- BURN VIEW ---------- */
 #view-burn{ justify-content:center; }
 .burn-label{
@@ -327,7 +328,7 @@ body{
   opacity:0; pointer-events:none; transition:opacity .25s ease;
 }
 .back-arrow.show{ opacity:1; pointer-events:auto; }
-
+ 
 .finished-overlay{
   position:fixed; inset:0; z-index:4; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px;
   background:rgba(6,5,3,0); pointer-events:none; opacity:0; transition:opacity .8s ease, background .8s ease;
@@ -339,9 +340,9 @@ body{
 </style>
 </head>
 <body>
-
+ 
 <div class="noise"></div>
-
+ 
 <!-- MENU -->
 <div id="view-menu" class="view active">
   <div class="eyebrow">Konzentration</div>
@@ -363,7 +364,7 @@ body{
     <button class="btn btn-time" id="timeBtn">Time</button>
   </div>
 </div>
-
+ 
 <!-- TIME / PROFILES -->
 <div id="view-time" class="view ui-sans">
   <div class="time-header">
@@ -375,7 +376,7 @@ body{
   </div>
   <div class="profile-list" id="profileList"></div>
 </div>
-
+ 
 <!-- BURN -->
 <div id="view-burn" class="view">
   <div class="burn-label" id="burnLabel"></div>
@@ -393,14 +394,14 @@ body{
   </div>
   <div class="burn-time" id="burnTime">00:00</div>
 </div>
-
+ 
 <button class="back-arrow" id="backArrow" aria-label="Zurück zum Menü">←</button>
-
+ 
 <div class="finished-overlay" id="finishedOverlay">
   <p>Die Kerze ist erloschen.</p>
   <button class="btn" id="finishedBackBtn">Zurück zum Menü</button>
 </div>
-
+ 
 <!-- EDITOR MODAL -->
 <div class="modal-backdrop" id="modalBackdrop">
   <div class="modal">
@@ -427,11 +428,11 @@ body{
     <button class="btn-delete" id="modalDelete">Profil löschen</button>
   </div>
 </div>
-
+ 
 <script>
 (function(){
   "use strict";
-
+ 
   /* ---------- storage (falls back to memory if localStorage is unavailable) ---------- */
   const memoryStore = {};
   function storeGet(key){
@@ -440,16 +441,16 @@ body{
   function storeSet(key, value){
     try { localStorage.setItem(key, value); } catch(e){ memoryStore[key] = value; }
   }
-
+ 
   const DEFAULT_PROFILES = [
     { id:1, name:'Profil 1', minutes:25 },
     { id:2, name:'Profil 2', minutes:45 },
     { id:3, name:'Profil 3', minutes:60 }
   ];
-
+ 
   let profiles = [];
   let activeId = null;
-
+ 
   function loadProfiles(){
     try{
       const raw = storeGet('flamme_profiles');
@@ -470,7 +471,7 @@ body{
   function nextId(){
     return profiles.reduce((m,p)=>Math.max(m,p.id),0) + 1;
   }
-
+ 
   /* ---------- view switching ---------- */
   const views = {
     menu: document.getElementById('view-menu'),
@@ -481,12 +482,12 @@ body{
     Object.values(views).forEach(v=>v.classList.remove('active'));
     views[name].classList.add('active');
   }
-
+ 
   function renderMenuSub(){
     const p = getActiveProfile();
     document.getElementById('menuSub').textContent = p.name + ' · ' + p.minutes + ' Min';
   }
-
+ 
   /* ---------- profile list rendering ---------- */
   const profileListEl = document.getElementById('profileList');
   function renderProfileList(){
@@ -521,7 +522,7 @@ body{
       });
       profileListEl.appendChild(row);
     });
-
+ 
     const addBox = document.createElement('button');
     addBox.className = 'add-profile-box';
     addBox.type = 'button';
@@ -529,7 +530,7 @@ body{
     addBox.addEventListener('click', ()=>openEditor(null));
     profileListEl.appendChild(addBox);
   }
-
+ 
   /* ---------- editor modal ---------- */
   const modalBackdrop = document.getElementById('modalBackdrop');
   const modalTitle = document.getElementById('modalTitle');
@@ -537,7 +538,7 @@ body{
   const minutesInput = document.getElementById('profileMinutesInput');
   const deleteBtn = document.getElementById('modalDelete');
   let editingId = null;
-
+ 
   function openEditor(id){
     editingId = id;
     const isNew = id===null;
@@ -567,16 +568,16 @@ body{
     updateChipHighlight();
   });
   minutesInput.addEventListener('input', updateChipHighlight);
-
+ 
   document.getElementById('modalCancel').addEventListener('click', closeEditor);
   modalBackdrop.addEventListener('click', (e)=>{ if(e.target===modalBackdrop) closeEditor(); });
-
+ 
   document.getElementById('modalSave').addEventListener('click', ()=>{
     let name = nameInput.value.trim();
     let minutes = Math.round(Number(minutesInput.value));
     if(!isFinite(minutes) || minutes<1) minutes = 1;
     if(minutes>180) minutes = 180;
-
+ 
     if(editingId===null){
       const id = nextId();
       if(!name) name = 'Profil ' + id;
@@ -593,7 +594,7 @@ body{
     renderMenuSub();
     closeEditor();
   });
-
+ 
   deleteBtn.addEventListener('click', ()=>{
     if(editingId===null || profiles.length<=1) return;
     profiles = profiles.filter(p=>p.id!==editingId);
@@ -603,14 +604,14 @@ body{
     renderMenuSub();
     closeEditor();
   });
-
+ 
   /* ---------- navigation ---------- */
   document.getElementById('timeBtn').addEventListener('click', ()=>{
     renderProfileList();
     showView('time');
   });
   document.getElementById('timeBack').addEventListener('click', ()=>showView('menu'));
-
+ 
   /* ---------- burning logic ---------- */
   const BURN_TRACK_H = 300; // keep in sync with .candle--burning --h
   const STUB_H = 14;
@@ -619,19 +620,19 @@ body{
   const burnTimeEl = document.getElementById('burnTime');
   const burnLabelEl = document.getElementById('burnLabel');
   const finishedOverlay = document.getElementById('finishedOverlay');
-
+ 
   let burnInterval = null;
   let burnTimeout = null;
   let burnEnd = 0;
-
+ 
   function startBurning(){
     const profile = getActiveProfile();
     const totalMs = profile.minutes * 60000;
-
+ 
     burnLabelEl.textContent = profile.name;
     finishedOverlay.classList.remove('show');
     burnCandle.classList.remove('extinguished');
-
+ 
     burnWaxBody.style.transition = 'none';
     burnWaxBody.style.height = BURN_TRACK_H + 'px';
     // force reflow so the browser registers the reset before animating
@@ -640,31 +641,31 @@ body{
     requestAnimationFrame(()=>{
       burnWaxBody.style.height = STUB_H + 'px';
     });
-
+ 
     burnEnd = Date.now() + totalMs;
     clearInterval(burnInterval);
     clearTimeout(burnTimeout);
     updateBurnTime();
     burnInterval = setInterval(updateBurnTime, 250);
     burnTimeout = setTimeout(finishBurning, totalMs);
-
+ 
     showView('burn');
   }
-
+ 
   function updateBurnTime(){
     const remain = Math.max(0, burnEnd - Date.now());
     const m = Math.floor(remain/60000);
     const s = Math.floor((remain%60000)/1000);
     burnTimeEl.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
   }
-
+ 
   function finishBurning(){
     clearInterval(burnInterval);
     burnTimeEl.textContent = '00:00';
     burnCandle.classList.add('extinguished');
     setTimeout(()=>finishedOverlay.classList.add('show'), 900);
   }
-
+ 
   function stopBurning(){
     clearInterval(burnInterval);
     clearTimeout(burnTimeout);
@@ -672,10 +673,10 @@ body{
     document.getElementById('backArrow').classList.remove('show');
     showView('menu');
   }
-
+ 
   document.getElementById('startBtn').addEventListener('click', startBurning);
   document.getElementById('finishedBackBtn').addEventListener('click', stopBurning);
-
+ 
   /* ---------- double-tap to reveal back arrow during burn ---------- */
   const backArrow = document.getElementById('backArrow');
   let lastTap = 0;
@@ -691,7 +692,7 @@ body{
     lastTap = now;
   });
   backArrow.addEventListener('click', stopBurning);
-
+ 
   /* ---------- init ---------- */
   loadProfiles();
   renderMenuSub();
@@ -699,3 +700,4 @@ body{
 </script>
 </body>
 </html>
+ 
